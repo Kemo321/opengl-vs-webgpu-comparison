@@ -1,5 +1,5 @@
 from typing import Tuple
-import glm
+from pyglm import glm
 
 
 class Camera:

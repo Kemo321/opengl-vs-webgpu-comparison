@@ -1,6 +1,6 @@
 import trimesh
 import numpy as np
-import glm
+from pyglm import glm
 from typing import Any, List, Sequence, Tuple, Union
 
 
