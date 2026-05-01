@@ -79,7 +79,7 @@ def main() -> None:
 
     results: List[Dict[str, Union[str, int]]] = [data for data in (opengl_data, webgpu_data) if data]
 
-    csv_path: str = "../reports/complexity_report.csv"
+    csv_path: str = "./reports/complexity_report.csv"
     fieldnames: List[str] = [
         "API",
         "Total_Lines_of_Code",

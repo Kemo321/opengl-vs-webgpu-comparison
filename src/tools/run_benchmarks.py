@@ -76,7 +76,7 @@ def run_benchmarks() -> None:
                 print(e.output)
 
     # Persist results to CSV.
-    csv_file: str = "../reports/performance_results.csv"
+    csv_file: str = "./reports/performance_results.csv"
 
     os.makedirs(os.path.dirname(csv_file), exist_ok=True)
     with open(csv_file, "w", newline="") as f:
