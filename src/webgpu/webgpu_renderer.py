@@ -104,7 +104,7 @@ class WebGPURenderer(Renderer):
         adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
         self.device = adapter.request_device()
 
-        self.present_context = window_canvas.get_context("webgpu")
+        self.present_context = window_canvas.get_context("wgpu")
         self.present_format = self.present_context.get_preferred_format(adapter)
         self.present_context.configure(device=self.device, format=self.present_format)
 
@@ -345,8 +345,6 @@ class WebGPURenderer(Renderer):
                 "depth_store_op": wgpu.StoreOp.store,
 
                 "stencil_clear_value": 0,
-                "stencil_load_op": wgpu.LoadOp.clear,
-                "stencil_store_op": wgpu.StoreOp.store,
             },
         )
 
