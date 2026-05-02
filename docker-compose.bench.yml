@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  benchmark-runner:
+    build: 
+      context: .
+      dockerfile: Dockerfile.bench
+    container_name: gkom_benchmark_runner
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - BENCHMARK_FRAMES=500

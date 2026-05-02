@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  gkom-benchmark:
+    build: .
+    container_name: 3d_benchmark_web
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/app/reports

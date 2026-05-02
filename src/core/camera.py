@@ -31,12 +31,51 @@ class Camera:
         self.yaw: float = -90.0
         self.pitch: float = 0.0
 
+        self.rotation_speed: float = 90.0
+
         self.movement_speed: float = 5.0
         self.mouse_sensitivity: float = 0.1
 
         self.fov: float = glm.radians(45.0)
         self.aspect_ratio: float = aspect_ratio
 
+        self._update_camera_vectors()
+
+    def process_rotation(self, direction: str, delta_time: float):
+        """Rotate the camera using discrete keyboard commands.
+
+        Updates the camera's yaw and pitch angles based on a direction
+        command and the elapsed time. The pitch is clamped to prevent
+        gimbal lock and the camera direction vectors are recomputed.
+
+        Args:
+            direction: One of "LOOK_LEFT", "LOOK_RIGHT", "LOOK_UP", "LOOK_DOWN".
+            delta_time: Time elapsed since the last update in seconds.
+
+        Notes:
+            This method adjusts angles in degrees. The internal call to
+            _update_camera_vectors() converts angles into normalized
+            front/right/up vectors used by the view matrix.
+
+        """
+        velocity = self.rotation_speed * delta_time
+
+        if direction == "LOOK_LEFT":
+            self.yaw -= velocity
+        elif direction == "LOOK_RIGHT":
+            self.yaw += velocity
+        elif direction == "LOOK_UP":
+            self.pitch += velocity
+        elif direction == "LOOK_DOWN":
+            self.pitch -= velocity
+
+        # Clamp pitch to avoid gimbal lock (standard limiter)
+        if self.pitch > 89.0:
+            self.pitch = 89.0
+        if self.pitch < -89.0:
+            self.pitch = -89.0
+
+        # Recalculate direction vectors
         self._update_camera_vectors()
 
     def get_view_matrix(self) -> glm.mat4:

@@ -101,10 +101,10 @@ class WebGPURenderer(Renderer):
         Returns:
             None
         """
-        adapter = wgpu.gpu.request_adapter_sync(power_preference="high-performance")
-        self.device = adapter.request_device_sync()
+        adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
+        self.device = adapter.request_device()
 
-        self.present_context = window_canvas.get_context("wgpu")
+        self.present_context = window_canvas.get_context("webgpu")
         self.present_format = self.present_context.get_preferred_format(adapter)
         self.present_context.configure(device=self.device, format=self.present_format)
 
@@ -294,9 +294,12 @@ class WebGPURenderer(Renderer):
             )
             self.depth_view = self.depth_texture.create_view()
 
-        # Pack camera view-projection matrix and the first two lights (144 bytes)
-        vp_mat = camera.get_projection_matrix() * camera.get_view_matrix()
-        vp_bytes = np.array(vp_mat.to_list(), dtype=np.float32).tobytes()
+        proj = camera.get_projection_matrix()
+        view = camera.get_view_matrix()
+        
+        vp_mat = proj * view 
+
+        vp_bytes = np.array(vp_mat.to_list(), dtype=np.float32).flatten().tobytes()
 
         frame_data = (
             vp_bytes
@@ -340,6 +343,10 @@ class WebGPURenderer(Renderer):
                 "depth_clear_value": 1.0,
                 "depth_load_op": wgpu.LoadOp.clear,
                 "depth_store_op": wgpu.StoreOp.store,
+
+                "stencil_clear_value": 0,
+                "stencil_load_op": wgpu.LoadOp.clear,
+                "stencil_store_op": wgpu.StoreOp.store,
             },
         )
 

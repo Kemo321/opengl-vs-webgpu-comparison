@@ -1,7 +1,7 @@
 import glfw
 from typing import Any, Dict, Optional
 from src.core.camera import Camera
-from rendercanvas.glfw import RenderCanvas
+from wgpu.gui.glfw import WgpuCanvas
 
 
 class WindowManager:
@@ -113,7 +113,7 @@ class WindowManager:
             glfw.swap_interval(0)
             self.glfw_window_ptr = self.window
         else:
-            self.window = RenderCanvas(title=self.title, size=(self.width, self.height), update_mode="fastest")
+            self.window = WgpuCanvas(title=self.title, size=(self.width, self.height), max_fps=1000000)
             self.glfw_window_ptr = getattr(self.window, "_window", self.window)
 
         glfw.set_input_mode(self.glfw_window_ptr, glfw.CURSOR, glfw.CURSOR_DISABLED)
@@ -140,3 +140,12 @@ class WindowManager:
             self.camera.process_keyboard("LEFT", delta_time)
         if self.keys.get(glfw.KEY_D):
             self.camera.process_keyboard("RIGHT", delta_time)
+
+        if self.keys.get(glfw.KEY_LEFT):
+            self.camera.process_rotation("LOOK_LEFT", delta_time)
+        if self.keys.get(glfw.KEY_RIGHT):
+            self.camera.process_rotation("LOOK_RIGHT", delta_time)
+        if self.keys.get(glfw.KEY_UP):
+            self.camera.process_rotation("LOOK_UP", delta_time)
+        if self.keys.get(glfw.KEY_DOWN):
+            self.camera.process_rotation("LOOK_DOWN", delta_time)

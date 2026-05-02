@@ -94,39 +94,70 @@ def main() -> None:
     last_time = start_time
     frame_count = 0
 
-    # Main render loop.
-    while not glfw.window_should_close(win_manager.glfw_window_ptr):
-        current_time = glfw.get_time()
-        dt = current_time - last_time
-        last_time = current_time
+    if args.api == "opengl":
+        while not glfw.window_should_close(win_manager.glfw_window_ptr):
+            current_time = glfw.get_time()
+            dt = current_time - last_time
+            last_time = current_time
 
-        glfw.poll_events()
-        win_manager.process_input(dt)
-        renderer.render_frame(scene, camera)
+            glfw.poll_events()
+            win_manager.process_input(dt)
+            renderer.render_frame(scene, camera)
 
-        if args.api == "opengl":
             glfw.swap_buffers(window)
 
-        # Update performance statistics.
-        if profiler.update():
-            fps_text = f"GKOM | {args.api.upper()} | Scen: {args.scenario} | FPS: {profiler.fps:.0f} | {profiler.frame_time_ms:.2f}ms"
-            glfw.set_window_title(win_manager.glfw_window_ptr, fps_text)
+            if profiler.update():
+                fps_text = f"GKOM | OPENGL | Scen: {args.scenario} | FPS: {profiler.fps:.0f} | {profiler.frame_time_ms:.2f}ms"
+                glfw.set_window_title(win_manager.glfw_window_ptr, fps_text)
 
-        frame_count += 1
-        if args.benchmark_frames > 0 and frame_count >= args.benchmark_frames:
-            break
+            frame_count += 1
+            if args.benchmark_frames > 0 and frame_count >= args.benchmark_frames:
+                break
 
-    if args.benchmark_frames > 0:
-        total_time = glfw.get_time() - start_time
-        avg_fps = frame_count / total_time
-        avg_frame_time_ms = (total_time / frame_count) * 1000
-        print(
-            f"BENCHMARK_RESULT,{args.api},{args.scenario},{avg_fps:.2f},{avg_frame_time_ms:.2f}"
-        )
+        if args.benchmark_frames > 0:
+            total_time = glfw.get_time() - start_time
+            avg_fps = frame_count / total_time
+            avg_frame_time_ms = (total_time / frame_count) * 1000
+            print(f"BENCHMARK_RESULT,opengl,{args.scenario},{avg_fps:.2f},{avg_frame_time_ms:.2f}")
 
-    renderer.cleanup()
-    glfw.terminate()
+        renderer.cleanup()
+        glfw.terminate()
 
+    else:
+        import wgpu.gui.glfw
+
+        def draw_frame():
+            nonlocal last_time, frame_count
+            
+            if args.benchmark_frames > 0 and frame_count >= args.benchmark_frames:
+                glfw.set_window_should_close(win_manager.glfw_window_ptr, True)
+                total_time = glfw.get_time() - start_time
+                avg_fps = frame_count / total_time
+                avg_frame_time_ms = (total_time / frame_count) * 1000
+                print(f"BENCHMARK_RESULT,webgpu,{args.scenario},{avg_fps:.2f},{avg_frame_time_ms:.2f}")
+                return
+
+            current_time = glfw.get_time()
+            dt = current_time - last_time
+            last_time = current_time
+
+            glfw.poll_events()
+            win_manager.process_input(dt)
+            renderer.render_frame(scene, camera)
+
+            if profiler.update():
+                fps_text = f"GKOM | WEBGPU | Scen: {args.scenario} | FPS: {profiler.fps:.0f} | {profiler.frame_time_ms:.2f}ms"
+                glfw.set_window_title(win_manager.glfw_window_ptr, fps_text)
+
+            frame_count += 1
+            
+            window.request_draw()
+
+        window.request_draw(draw_frame)
+        
+        wgpu.gui.glfw.run()
+        
+        renderer.cleanup()
 
 if __name__ == "__main__":
     main()
