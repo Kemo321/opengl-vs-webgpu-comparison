@@ -50,7 +50,7 @@ def setup_village_scenario(scene: Scene) -> None:
     walls.set_instances(house_offsets)
     scene.add_object(walls)
 
-    roof_offsets: List[List[float]] = [[p[0], p[1] + 1.0, p[2]] for p in house_offsets]
+    roof_offsets: List[List[float]] = [[p[0], p[1], p[2]] for p in house_offsets]
     roofs = SceneObject(roof, color=(0.7, 0.1, 0.1))
     roofs.set_instances(roof_offsets)
     scene.add_object(roofs)
@@ -89,10 +89,18 @@ def setup_forest_scenario(scene: Scene) -> None:
     trunks.set_instances(offsets)
     scene.add_object(trunks)
 
-    leaf_offsets: List[List[float]] = [[p[0], p[1] + 1.5, p[2]] for p in offsets]
+    leaf_offsets_top: List[List[float]] = [[p[0], p[1] + 1.5, p[2]] for p in offsets]
+    leaf_offsets_mid: List[List[float]] = [[p[0], p[1] + 0.5, p[2]] for p in offsets]
+    leaf_offsets_low: List[List[float]] = [[p[0], p[1] + -0.5, p[2]] for p in offsets]
     forest_top = SceneObject(leaves, color=(0.1, 0.8, 0.1))
-    forest_top.set_instances(leaf_offsets)
+    forest_mid = SceneObject(leaves, color=(0.1, 0.8, 0.1))
+    forest_low = SceneObject(leaves, color=(0.1, 0.8, 0.1))
+    forest_top.set_instances(leaf_offsets_top)
+    forest_mid.set_instances(leaf_offsets_mid)
+    forest_low.set_instances(leaf_offsets_low)
     scene.add_object(forest_top)
+    scene.add_object(forest_mid)
+    scene.add_object(forest_low)
 
     _add_default_lights(scene)
 

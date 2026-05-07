@@ -106,10 +106,18 @@ class OpenGLRenderer(Renderer):
         gl.glEnable(gl.GL_FRAMEBUFFER_SRGB)
         gl.glClearColor(0.05, 0.05, 0.05, 1.0)
 
+        # Create a temporary VAO for shader validation (required by modern OpenGL)
+        temp_vao = gl.glGenVertexArrays(1)
+        gl.glBindVertexArray(temp_vao)
+
         self.shader = compileProgram(
             compileShader(VERTEX_SHADER, gl.GL_VERTEX_SHADER),
             compileShader(FRAGMENT_SHADER, gl.GL_FRAGMENT_SHADER),
         )
+
+        # Clean up temporary VAO
+        gl.glBindVertexArray(0)
+        gl.glDeleteBuffers(1, [temp_vao])
 
     def _prepare_buffers(self, scene_obj: Any) -> None:
         """Create GPU buffers and configure vertex attributes.
