@@ -1,7 +1,7 @@
 import glfw
 from typing import Any, Dict, Optional
 from src.core.camera import Camera
-from wgpu.gui.glfw import WgpuCanvas
+from rendercanvas.glfw import RenderCanvas as WgpuCanvas
 
 
 class WindowManager:
@@ -113,7 +113,10 @@ class WindowManager:
             glfw.swap_interval(0)
             self.glfw_window_ptr = self.window
         else:
-            self.window = WgpuCanvas(title=self.title, size=(self.width, self.height), max_fps=1000000)
+            if not glfw.init():
+                return None
+            # RenderCanvas with immediate rendering mode and vsync disabled
+            self.window = WgpuCanvas(title=self.title, size=(self.width, self.height), update_mode="fastest", vsync=False)
             self.glfw_window_ptr = getattr(self.window, "_window", self.window)
 
         glfw.set_input_mode(self.glfw_window_ptr, glfw.CURSOR, glfw.CURSOR_DISABLED)

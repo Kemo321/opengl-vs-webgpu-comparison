@@ -2,6 +2,7 @@ import glfw
 import argparse
 from typing import Any
 
+from rendercanvas.glfw import loop as render_loop
 from src.core.camera import Camera
 from src.core.scene import Scene
 from src.core.profiler import Profiler
@@ -124,8 +125,6 @@ def main() -> None:
         glfw.terminate()
 
     else:
-        import wgpu.gui.glfw
-
         def draw_frame():
             nonlocal last_time, frame_count
             
@@ -151,11 +150,11 @@ def main() -> None:
 
             frame_count += 1
             
-            window.request_draw()
+            # Request next frame immediately
+            window.request_draw(draw_frame)
 
         window.request_draw(draw_frame)
-        
-        wgpu.gui.glfw.run()
+        render_loop.run()
         
         renderer.cleanup()
 

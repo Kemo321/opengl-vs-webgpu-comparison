@@ -101,8 +101,15 @@ class WebGPURenderer(Renderer):
         Returns:
             None
         """
-        adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
-        self.device = adapter.request_device()
+        if hasattr(wgpu.gpu, "request_adapter_sync"):
+            adapter = wgpu.gpu.request_adapter_sync(power_preference="high-performance")
+        else:
+            adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
+
+        if hasattr(adapter, "request_device_sync"):
+            self.device = adapter.request_device_sync()
+        else:
+            self.device = adapter.request_device()
 
         self.present_context = window_canvas.get_context("wgpu")
         self.present_format = self.present_context.get_preferred_format(adapter)
