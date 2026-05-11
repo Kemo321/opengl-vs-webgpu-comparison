@@ -72,3 +72,5 @@ Testing/
 __pycache__/
 *.pyc
 *.pyo
+
+*.npz

@@ -9,8 +9,9 @@ def test_profiler_initial_state():
     assert p.frame_time_ms == 0.0
 
 
-def test_profiler_update_no_refresh(mocker):
-    mocker.patch("time.perf_counter", side_effect=[0.0, 0.5])
+def test_profiler_update_no_refresh(monkeypatch):
+    perf_counter_values = iter([0.0, 0.5])
+    monkeypatch.setattr("time.perf_counter", lambda: next(perf_counter_values))
     p = Profiler()
     p.last_time = 0.0
 
@@ -19,8 +20,9 @@ def test_profiler_update_no_refresh(mocker):
     assert p.frames == 1
 
 
-def test_profiler_update_with_refresh(mocker):
-    mocker.patch("time.perf_counter", side_effect=[0.0, 1.0])
+def test_profiler_update_with_refresh(monkeypatch):
+    perf_counter_values = iter([0.0, 1.0])
+    monkeypatch.setattr("time.perf_counter", lambda: next(perf_counter_values))
     p = Profiler()
     p.last_time = 0.0
     p.frames = 59

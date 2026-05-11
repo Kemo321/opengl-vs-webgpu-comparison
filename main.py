@@ -29,13 +29,18 @@ def parse_arguments() -> argparse.Namespace:
         type=int,
         choices=[1, 2, 3],
         default=3,
-        help="Select the test scenario. 1: Village, 2: Forest, 3: Stress Test (default: 3)",
+        help="Select the test scenario. 1: Complex Objects, 2: Multiple Lights, 3: Mega Grid (default: 3)",
     )
     parser.add_argument(
         "--benchmark-frames",
         type=int,
         default=0,
         help="Number of frames to render before automatic closing (0 = disabled)",
+    )
+    parser.add_argument(
+        "--instancing",
+        action="store_true",
+        help="Enable instanced rendering (default: disabled)",
     )
     parser.add_argument(
         "--width", type=int, default=1280, help="Window width (default: 1280)"
@@ -70,9 +75,9 @@ def main() -> None:
     # Load the selected scenario.
     print(f"Loading Scenario {args.scenario}...")
     if args.scenario == 1:
-        scenarios.setup_village_scenario(scene)
+        scenarios.setup_complex_object_scenario(scene)
     elif args.scenario == 2:
-        scenarios.setup_forest_scenario(scene)
+        scenarios.setup_multiple_light_scenario(scene)
     else:
         scenarios.setup_mega_grid_scenario(scene)
 
@@ -103,7 +108,7 @@ def main() -> None:
 
             glfw.poll_events()
             win_manager.process_input(dt)
-            renderer.render_frame(scene, camera)
+            renderer.render_frame(scene, camera, use_instancing=args.instancing)
 
             glfw.swap_buffers(window)
 
@@ -142,7 +147,7 @@ def main() -> None:
 
             glfw.poll_events()
             win_manager.process_input(dt)
-            renderer.render_frame(scene, camera)
+            renderer.render_frame(scene, camera, use_instancing=args.instancing)
 
             if profiler.update():
                 fps_text = f"GKOM | WEBGPU | Scen: {args.scenario} | FPS: {profiler.fps:.0f} | {profiler.frame_time_ms:.2f}ms"

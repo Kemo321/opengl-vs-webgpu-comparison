@@ -27,7 +27,7 @@ class Mesh:
 
     @staticmethod
     def load_from_file(filepath: str) -> "Mesh":
-        """Load mesh data from a 3D model file.
+        """Load mesh data from a 3D model file. Caches processed geometry for faster subsequent loads.
 
         Args:
             filepath: Path to the 3D model file.
@@ -35,10 +35,21 @@ class Mesh:
         Returns:
             Mesh: New mesh instance with flattened geometry arrays.
         """
+        cache_filepath = filepath + ".cache.npz"
+        try:
+            with np.load(cache_filepath) as data:
+                vertices = data["vertices"]
+                normals = data["normals"]
+                indices = data["indices"]
+                return Mesh(vertices, normals, indices)
+        except Exception:
+            pass
+
         mesh_data = trimesh.load(filepath, force="mesh")
         vertices = np.array(mesh_data.vertices, dtype=np.float32).flatten()
         normals = np.array(mesh_data.vertex_normals, dtype=np.float32).flatten()
         indices = np.array(mesh_data.faces, dtype=np.uint32).flatten()
+        np.savez(cache_filepath, vertices=vertices, normals=normals, indices=indices)
         return Mesh(vertices, normals, indices)
 
 

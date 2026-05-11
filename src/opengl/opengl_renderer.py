@@ -61,7 +61,6 @@ vec3 CalcPhong(vec3 lPos, vec3 lColor, vec3 norm, vec3 viewDir) {
 
     float specularStrength = 0.5;
     vec3 reflectDir = reflect(-lightDir, norm);
-    // FIX: use reflectDir for the specular calculation
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lColor;
 
@@ -161,7 +160,10 @@ class OpenGLRenderer(Renderer):
         ebo = gl.glGenBuffers(1)
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, ebo)
         gl.glBufferData(
-            gl.GL_ELEMENT_ARRAY_BUFFER, mesh.indices.nbytes, mesh.indices, gl.GL_STATIC_DRAW
+            gl.GL_ELEMENT_ARRAY_BUFFER,
+            mesh.indices.nbytes,
+            mesh.indices,
+            gl.GL_STATIC_DRAW,
         )
 
         gl.glBindVertexArray(0)
@@ -175,13 +177,15 @@ class OpenGLRenderer(Renderer):
             }
         )
 
-    def render_frame(self, scene: Any, camera: Any) -> None:
+    def render_frame(
+        self, scene: Any, camera: Any, use_instancing: bool = True
+    ) -> None:
         """Render a single frame.
 
         Args:
             scene: Scene containing objects and lights.
             camera: Active camera providing view and projection matrices.
-
+            use_instancing: Flag to enable or disable instanced rendering.
         Returns:
             None.
         """
@@ -191,7 +195,9 @@ class OpenGLRenderer(Renderer):
         view = np.array(camera.get_view_matrix(), dtype=np.float32)
         proj = np.array(camera.get_projection_matrix(), dtype=np.float32)
 
-        gl.glUniformMatrix4fv(gl.glGetUniformLocation(self.shader, "view"), 1, gl.GL_TRUE, view)
+        gl.glUniformMatrix4fv(
+            gl.glGetUniformLocation(self.shader, "view"), 1, gl.GL_TRUE, view
+        )
         gl.glUniformMatrix4fv(
             gl.glGetUniformLocation(self.shader, "projection"), 1, gl.GL_TRUE, proj
         )
@@ -221,15 +227,28 @@ class OpenGLRenderer(Renderer):
         obj_color_loc = gl.glGetUniformLocation(self.shader, "objectColor")
 
         for gpu_obj in self.gpu_objects:
-            gl.glUniform3fv(obj_color_loc, 1, np.array(gpu_obj["color"], dtype=np.float32))
-            gl.glBindVertexArray(gpu_obj["vao"])
-            gl.glDrawElementsInstanced(
-                gl.GL_TRIANGLES,
-                gpu_obj["index_count"],
-                gl.GL_UNSIGNED_INT,
-                None,
-                gpu_obj["instance_count"],
+            gl.glUniform3fv(
+                obj_color_loc, 1, np.array(gpu_obj["color"], dtype=np.float32)
             )
+            gl.glBindVertexArray(gpu_obj["vao"])
+            if use_instancing:
+                gl.glDrawElementsInstanced(
+                    gl.GL_TRIANGLES,
+                    gpu_obj["index_count"],
+                    gl.GL_UNSIGNED_INT,
+                    None,
+                    gpu_obj["instance_count"],
+                )
+            else:
+                for i in range(gpu_obj["instance_count"]):
+                    gl.glDrawElementsInstancedBaseInstance(
+                        gl.GL_TRIANGLES,
+                        gpu_obj["index_count"],
+                        gl.GL_UNSIGNED_INT,
+                        None,
+                        1,
+                        i,
+                    )
             gl.glBindVertexArray(0)
 
     def cleanup(self) -> None:

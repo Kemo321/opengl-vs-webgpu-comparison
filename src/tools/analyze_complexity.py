@@ -71,10 +71,10 @@ def main() -> None:
         None
     """
     opengl_data: Optional[Dict[str, Union[str, int]]] = analyze_file(
-        "../src/opengl/opengl_renderer.py", "OpenGL"
+        "./src/opengl/opengl_renderer.py", "OpenGL"
     )
     webgpu_data: Optional[Dict[str, Union[str, int]]] = analyze_file(
-        "../src/webgpu/webgpu_renderer.py", "WebGPU"
+        "./src/webgpu/webgpu_renderer.py", "WebGPU"
     )
 
     results: List[Dict[str, Union[str, int]]] = [data for data in (opengl_data, webgpu_data) if data]

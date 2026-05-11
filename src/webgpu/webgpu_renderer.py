@@ -60,7 +60,6 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     var result = calc_phong(frame_uniforms.light1_pos.xyz, frame_uniforms.light1_color.xyz, norm, view_dir, in.frag_pos);
     result += calc_phong(frame_uniforms.light2_pos.xyz, frame_uniforms.light2_color.xyz, norm, view_dir, in.frag_pos);
 
-    // Używamy koloru z dedykowanej dla obiektu grupy
     return vec4<f32>(result * object_uniforms.object_color.xyz, 1.0);
 }
 """
@@ -271,13 +270,16 @@ class WebGPURenderer(Renderer):
             }
         )
 
-    def render_frame(self, scene: Any, camera: Any) -> None:
+    def render_frame(
+        self, scene: Any, camera: Any, use_instancing: bool = True
+    ) -> None:
         """Render a single frame for the provided scene and camera.
 
         Args:
             scene: Scene object containing lights and objects lists.
             camera: Camera object exposing projection and view matrix accessors
                 and a position attribute.
+            use_instancing: Flag to enable or disable instanced rendering.
 
         Returns:
             None
@@ -303,8 +305,8 @@ class WebGPURenderer(Renderer):
 
         proj = camera.get_projection_matrix()
         view = camera.get_view_matrix()
-        
-        vp_mat = proj * view 
+
+        vp_mat = proj * view
 
         vp_bytes = np.array(vp_mat.to_list(), dtype=np.float32).flatten().tobytes()
 
@@ -350,7 +352,6 @@ class WebGPURenderer(Renderer):
                 "depth_clear_value": 1.0,
                 "depth_load_op": wgpu.LoadOp.clear,
                 "depth_store_op": wgpu.StoreOp.store,
-
                 "stencil_clear_value": 0,
             },
         )
@@ -370,9 +371,13 @@ class WebGPURenderer(Renderer):
             render_pass.set_index_buffer(
                 gpu_obj["ebo"], wgpu.IndexFormat.uint32, 0, gpu_obj["ebo"].size
             )
-            render_pass.draw_indexed(
-                gpu_obj["index_count"], gpu_obj["instance_count"], 0, 0, 0
-            )
+            if use_instancing:
+                render_pass.draw_indexed(
+                    gpu_obj["index_count"], gpu_obj["instance_count"], 0, 0, 0
+                )
+            else:
+                for i in range(gpu_obj["instance_count"]):
+                    render_pass.draw_indexed(gpu_obj["index_count"], 1, 0, 0, i)
 
         render_pass.end()
         self.device.queue.submit([command_encoder.finish()])

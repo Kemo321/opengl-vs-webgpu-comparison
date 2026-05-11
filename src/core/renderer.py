@@ -26,12 +26,15 @@ class Renderer(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def render_frame(self, scene: Any, camera: Any) -> None:
+    def render_frame(
+        self, scene: Any, camera: Any, use_instancing: bool = True
+    ) -> None:
         """Render a single frame using provided scene and camera data.
 
         Args:
             scene: Scene data container (geometry, materials, lights, etc.).
             camera: Camera describing view and projection parameters.
+            use_instancing: Flag to enable or disable instancing.
 
         Returns:
             None

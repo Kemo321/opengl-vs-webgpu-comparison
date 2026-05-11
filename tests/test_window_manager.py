@@ -1,17 +1,18 @@
 import pytest
+import glfw
 from src.core.window_manager import WindowManager
 from src.core.camera import Camera
 
 
-def test_window_manager_init_opengl(mocker):
-    mocker.patch('glfw.init', return_value=True)
-    mocker.patch('glfw.window_hint')
-    mocker.patch('glfw.create_window', return_value="MOCK_WINDOW_PTR")
-    mocker.patch('glfw.make_context_current')
-    mocker.patch('glfw.swap_interval')
-    mocker.patch('glfw.set_input_mode')
-    mocker.patch('glfw.set_key_callback')
-    mocker.patch('glfw.set_cursor_pos_callback')
+def test_window_manager_init_opengl(monkeypatch):
+    monkeypatch.setattr(glfw, 'init', lambda: True)
+    monkeypatch.setattr(glfw, 'window_hint', lambda *args, **kwargs: None)
+    monkeypatch.setattr(glfw, 'create_window', lambda *args, **kwargs: "MOCK_WINDOW_PTR")
+    monkeypatch.setattr(glfw, 'make_context_current', lambda *args, **kwargs: None)
+    monkeypatch.setattr(glfw, 'swap_interval', lambda *args, **kwargs: None)
+    monkeypatch.setattr(glfw, 'set_input_mode', lambda *args, **kwargs: None)
+    monkeypatch.setattr(glfw, 'set_key_callback', lambda *args, **kwargs: None)
+    monkeypatch.setattr(glfw, 'set_cursor_pos_callback', lambda *args, **kwargs: None)
 
     cam = Camera()
     wm = WindowManager(800, 600, "Test", cam)
@@ -21,12 +22,10 @@ def test_window_manager_init_opengl(mocker):
     assert wm.glfw_window_ptr == "MOCK_WINDOW_PTR"
 
 
-def test_window_manager_process_input(mocker):
+def test_window_manager_process_input():
     cam = Camera(position=(0, 0, 0))
     wm = WindowManager(800, 600, "Test", cam)
     wm.glfw_window_ptr = "MOCK_WINDOW"
-
-    import glfw
 
     wm.keys[glfw.KEY_W] = True
 
